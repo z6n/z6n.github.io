@@ -17,7 +17,7 @@
       <pubDate>Mon, 17 Dec 2018 13:19:48 +0800</pubDate>
       
       <guid>https://z6n.github.io/2018/12/sb_p1/</guid>
-      <description></description>
+      <description> 启动代码 @SpringBootApplication public class Run { public static void main(String[] args) { SpringApplication app = new SpringApplication(Run.class); app.run(args); } }  </description>
     </item>
     
   </channel>
