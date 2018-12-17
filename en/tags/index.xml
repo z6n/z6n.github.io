@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tags on Z6N</title>
+    <link>https://z6n.github.io/en/tags/</link>
+    <description>Recent content in Tags on Z6N</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>cn-zh</language>
+    
+	<atom:link href="https://z6n.github.io/en/tags/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+  </channel>
+</rss>

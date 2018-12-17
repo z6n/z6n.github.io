@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Categories on Z6N</title>
+    <link>https://z6n.github.io/categories/</link>
+    <description>Recent content in Categories on Z6N</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>cn-zh</language>
+    
+	<atom:link href="https://z6n.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Spring</title>
+      <link>https://z6n.github.io/categories/spring/</link>
+      <pubDate>Mon, 17 Dec 2018 13:19:48 +0800</pubDate>
+      
+      <guid>https://z6n.github.io/categories/spring/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>
