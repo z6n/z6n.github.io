@@ -129,6 +129,8 @@
     
         <a class="badge badge-primary" href="/tags/spring-boot">spring boot</a>
     
+        <a class="badge badge-primary" href="/tags/sources">sources</a>
+    
 </div>
 
         
@@ -140,7 +142,13 @@
 </div>
 
     </header>
-     启动代码 @SpringBootApplication public class Run { public static void main(String[] args) { SpringApplication app = new SpringApplication(Run.class); app.run(args); } }  
+    源码版本  spring boot 2.1.0.RELEASE
+  
+入口代码 @SpringBootApplication public class Run { public static void main(String[] args) { SpringApplication app = new SpringApplication(Run.class); // 1 app.run(args); // 2 } }  构造方法中的加载过程 在new SpringApplication(Run.class)中实际调用的是SpringApplication(ResourceLoader resourceLoader, Class&lt;?&gt;... primarySources)构造方法，在构造方法中主要执行了一些必要的查找初始化工作。   
+public SpringApplication(ResourceLoader resourceLoader, Class&lt;?&gt;... primarySources) { this.resourceLoader = resourceLoader; Assert.notNull(primarySources, &quot;PrimarySources must not be null&quot;); this.primarySources = new LinkedHashSet&lt;&gt;(Arrays.asList(primarySources)); this.webApplicationType = WebApplicationType.deduceFromClasspath(); // 1-1 setInitializers((Collection) getSpringFactoriesInstances( ApplicationContextInitializer.class)); // 1-2 setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.
+    
+    <p></p>
+    <a href="/2018/12/sb_p1/">阅读更多 →</a>
     
 </article>
 
@@ -189,6 +197,8 @@
         
         <h4>标签</h4>
         <p>
+            
+            <a class="badge badge-primary" href="/tags/sources">sources</a>
             
             <a class="badge badge-primary" href="/tags/spring-boot">spring-boot</a>
             
