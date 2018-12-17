@@ -1,0 +1,12 @@
+{{ $Github := "<a href=\"https://github.com/z6n\">Github</a>" }}
+{{ $links := (dict "Github" $Github ) }}
+{{ $thanks := i18n "thanks" $links | safeHTML }}
+
+{{ $copyright := default $thanks .Site.Copyright }}
+
+<footer class="blog-footer w-100">
+    <nav class="navbar navbar-light bg-light">
+        <p class="w-100 text-center">{{ $copyright }}</p>
+        <p class="w-100 text-center"><a href="#">{{ i18n "backToTop" }}</a></p>
+    </nav>
+</footer>

@@ -1,0 +1,29 @@
+- id: by
+  translation: "by"
+
+- id: tags
+  translation: "标签"
+
+- id: categories
+  translation: "分类"
+
+- id: readMore
+  translation: "阅读更多 →"
+
+- id: translations
+  translation: "翻译"
+
+- id: related
+  translation: "参见"
+
+- id: recentPosts
+  translation: "最近文章"
+
+- id: backToTop
+  translation: "回到顶部"
+
+- id: language
+  translation: "语言"
+
+- id: thanks
+  translation: "{{.Github}}"

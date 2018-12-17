@@ -1,0 +1,84 @@
+baseURL = "http://z6n.github.io/"
+languageCode = "cn-zh"
+title = "Z6N"
+defaultContentLanguage = "zh"
+
+# Pagination
+paginate = 10
+paginatePath = "page"
+
+# Theme to use
+theme = "bootstrap"
+
+[taxonomies]
+  tag = "tags"
+  category = "categories"
+
+# Google analytics
+#googleAnalytics = ""
+
+[languages.zh]
+  languageName = "中文"
+
+  # Replace the default footer message with a localized message
+
+  [[languages.zh.menu.main]]
+    url = "/"
+    name = "主页"
+    weight = 1
+  [[languages.zh.menu.main]]
+    url = "/about/"
+    name = "关于"
+    weight = 2
+  [[languages.zh.menu.main]]
+    url = "/contact/"
+    name = "联系"
+    weight = 3
+
+[languages.en]
+    languageName = "English"
+
+    # Replace the default footer message with a localized message
+
+    [[languages.en.menu.main]]
+      url = "/"
+      name = "Home"
+      weight = 1
+    [[languages.en.menu.main]]
+      url = "/about/"
+      name = "About"
+      weight = 2
+    [[languages.en.menu.main]]
+      url = "/contact/"
+      name = "Contact"
+      weight = 3
+
+
+
+# Links format
+
+[permalinks]
+  posts = "/:year/:month/:filename/"
+
+[params]
+  # Main sections (currently used for the recent posts in the sidebar)
+  # mainSections = ["posts"]
+
+  # Default author
+  author = "z6n"
+
+  # Date format (default: Jan 2, 2006)
+  date_format = "2006-01-02 15:04:05"
+
+  # Display post summaries instead of content in list templates (default: true)
+  # truncate = false
+
+  [params.sidebar]
+    # Whether to show the recent posts or not (default: true)
+    # showRecent = false
+
+    # Whether to show the taxonomies or not (default: true)
+    # showTaxonomy = false
+
+    # How many posts to show on the sidebar (Default: 5)
+    num_recent_posts = 10
