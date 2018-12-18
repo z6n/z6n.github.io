@@ -2,6 +2,7 @@
 title = "Spring Boot 源码分析(1)"
 description = ""
 tags = [
+    "java",
     "spring boot",
     "sources"
 ]
@@ -142,7 +143,7 @@ public ConfigurableApplicationContext run(String... args) {
 
   2-2-5. 通过 SpringApplicationRunListeners 触发ApplicationEnvironmentPreparedEvent 事件  
     (用于加载配置文件的监听类 ConfigFileApplicationListener 便是监听了该事件，yml或properties配置文件便是在这时加载到环境中)
-    
+
   2-2-6. SpringConfigurationPropertySources PropertySourcesPlaceholdersResolver 及3处的PropertySources绑定到一起用于后的属性获取包括将表达式解析成最终值 如 `server.port=${random.int[8080,8090]}`  
 
 <br/>

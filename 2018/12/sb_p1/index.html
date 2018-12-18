@@ -11,8 +11,8 @@
 入口代码 @SpringBootApplication public class Run { public static void main(String[] args) { SpringApplication app = new SpringApplication(Run.class); // 1 app.run(args); // 2 } }  构造方法中的加载过程 在new SpringApplication(Run.class)中实际调用的是SpringApplication(ResourceLoader resourceLoader, Class&lt;?&gt;... primarySources)构造方法，在构造方法中主要执行了一些必要的查找初始化工作。   
 public SpringApplication(ResourceLoader resourceLoader, Class&lt;?&gt;... primarySources) { this.resourceLoader = resourceLoader; Assert.notNull(primarySources, &quot;PrimarySources must not be null&quot;); this.primarySources = new LinkedHashSet&lt;&gt;(Arrays.asList(primarySources)); this.webApplicationType = WebApplicationType.deduceFromClasspath(); // 1-1 setInitializers((Collection) getSpringFactoriesInstances( ApplicationContextInitializer.class)); // 1-2 setListeners((Collection) getSpringFactoriesInstances(ApplicationListener." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://z6n.github.io/2018/12/sb_p1/" /><meta property="article:published_time" content="2018-12-17T13:19:48&#43;08:00"/>
-<meta property="article:modified_time" content="2018-12-17T13:19:48&#43;08:00"/>
+<meta property="og:url" content="https://z6n.github.io/2018/12/sb_p1/" /><meta property="article:published_time" content="2018-12-17T20:19:48&#43;08:00"/>
+<meta property="article:modified_time" content="2018-12-17T20:19:48&#43;08:00"/>
 
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Spring Boot 源码分析(1)"/>
@@ -112,7 +112,7 @@ public SpringApplication(ResourceLoader resourceLoader, Class&lt;?&gt;... primar
 
 <div class="blog-post-date text-secondary">
     
-        2018-12-17 13:19:48
+        2018-12-17 20:19:48
     
     
         by <span rel="author">z6n</span>
@@ -216,24 +216,24 @@ public class Run {
             ApplicationArguments applicationArguments = new DefaultApplicationArguments(
                     args);
             ConfigurableEnvironment environment = prepareEnvironment(listeners,
-                    applicationArguments);
-            configureIgnoreBeanInfo(environment);
+                    applicationArguments);    // 2-2
+            configureIgnoreBeanInfo(environment); // 2-3
             Banner printedBanner = printBanner(environment);
-            context = createApplicationContext();
+            context = createApplicationContext();  // 2-4
             exceptionReporters = getSpringFactoriesInstances(
                     SpringBootExceptionReporter.class,
-                    new Class[] { ConfigurableApplicationContext.class }, context);
+                    new Class[] { ConfigurableApplicationContext.class }, context);  // 2-5
             prepareContext(context, environment, listeners, applicationArguments,
-                    printedBanner);
-            refreshContext(context);
-            afterRefresh(context, applicationArguments);
+                    printedBanner);    // 2-6
+            refreshContext(context);    // 2-7
+            afterRefresh(context, applicationArguments);    // 2-8
             stopWatch.stop();
             if (this.logStartupInfo) {
                 new StartupInfoLogger(this.mainApplicationClass)
                         .logStarted(getApplicationLog(), stopWatch);
             }
-            listeners.started(context);
-            callRunners(context, applicationArguments);
+            listeners.started(context);  // 2-9
+            callRunners(context, applicationArguments);  // 2-10
         }
         catch (Throwable ex) {
             handleRunFailure(context, ex, exceptionReporters, listeners);
@@ -241,7 +241,7 @@ public class Run {
         }
 
         try {
-            listeners.running(context);
+            listeners.running(context);    // 2-11
         }
         catch (Throwable ex) {
             handleRunFailure(context, ex, exceptionReporters, null);
@@ -254,6 +254,40 @@ public class Run {
 <p><br/></p>
 
 <p>2-1. 扫描classpath:META-INF/spring.factories 文件中定义的 SpringApplicationRunListener 实现类,并创建实例,然后将实例组合到 SpringApplicationRunListeners 实例中，普通web应用默认情况下其实只是加载了一个 EventPublishingRunListener 实例，该实例在启动过程中会用来发送各类事件给监听器 (listeners.starting() 触发了一个 ApplicationStartingEvent 事件,这时就已经可以触发前面初始化加载的ApplicationListener监听器了)</p>
+
+<p>2-2. 主要做了如下几件事(只做简单描述，后面再做详细解刨)</p>
+
+<p>2-2-1. 根据前面判断的程序类型 WebApplicationType 创建对应的Environment实例</p>
+
+<p>2-2-2. 初始化和设置 ConversionService (用于各种类型的转换)</p>
+
+<p>2-2-3. 配置 MutablePropertySources 将命令行参数加入到属性最前面，如果有的话.<br />
+     (StandardServletEnvironment 在创建实例时就默认加载了<br />
+       [StubPropertySource {name=&lsquo;servletConfigInitParams&rsquo;},<br />
+     StubPropertySource {name=&lsquo;servletContextInitParams&rsquo;},<br />
+     MapPropertySource {name=&lsquo;systemProperties&rsquo;},<br />
+     SystemEnvironmentPropertySource {name=&lsquo;systemEnvironment&rsquo;}])</p>
+
+<p>2-2-4. 通过上一步加载的PropertySources 来设置 ActiveProfiles</p>
+
+<p>2-2-5. 通过 SpringApplicationRunListeners 触发ApplicationEnvironmentPreparedEvent 事件<br />
+    (用于加载配置文件的监听类 ConfigFileApplicationListener 便是监听了该事件，yml或properties配置文件便是在这时加载到环境中)</p>
+
+<p>2-2-6. SpringConfigurationPropertySources PropertySourcesPlaceholdersResolver 及3处的PropertySources绑定到一起用于后的属性获取包括将表达式解析成最终值 如 <code>server.port=${random.int[8080,8090]}</code></p>
+
+<p><br/>
+<br/></p>
+
+<h3 id="总结">总结</h3>
+
+<hr />
+
+<p>到这里只是简单的介绍了下spring boot的预启动过程，说明了再启动前做了哪些事，我们能从这些事情中能做到哪些切入点。 从上面我们可以看到我们能做的最早的切入点便是 ApplicationListener， ApplicationListener触发执行时，应用bean此时还并未进入初始化状态。所以我们可以用 ApplicationListener 来做很多的准备工作，比如改写配置，实现自己的配置属性加载类等。</p>
+
+<p><br/>
+<br/></p>
+
+<p><strong>待续&hellip;</strong></p>
 
 <p><br/>
   <br/>
