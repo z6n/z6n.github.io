@@ -8,7 +8,7 @@ tags = [
 ]
 date = "2018-12-17 20:19:48.287 +0800"
 categories = [
-    "spring"
+    "java"
 ]
 +++
 
@@ -126,6 +126,8 @@ public ConfigurableApplicationContext run(String... args) {
 
   2-1. 扫描classpath:META-INF/spring.factories 文件中定义的 SpringApplicationRunListener 实现类,并创建实例,然后将实例组合到 SpringApplicationRunListeners 实例中，普通web应用默认情况下其实只是加载了一个 EventPublishingRunListener 实例，该实例在启动过程中会用来发送各类事件给监听器 (listeners.starting() 触发了一个 ApplicationStartingEvent 事件,这时就已经可以触发前面初始化加载的ApplicationListener监听器了)  
 
+<br/>
+
   2-2. 主要做了如下几件事(只做简单描述，后面再做详细解刨)  
 
   2-2-1. 根据前面判断的程序类型 WebApplicationType 创建对应的Environment实例  
@@ -145,6 +147,31 @@ public ConfigurableApplicationContext run(String... args) {
     (用于加载配置文件的监听类 ConfigFileApplicationListener 便是监听了该事件，yml或properties配置文件便是在这时加载到环境中)
 
   2-2-6. SpringConfigurationPropertySources PropertySourcesPlaceholdersResolver 及2-2-3处的PropertySources绑定到一起用于后的属性获取包括将表达式解析成最终值 如 `server.port=${random.int[8080,8090]}`  
+
+<br/>
+
+2-3. configureIgnoreBeanInfo(environment) 在System.setProperty 中如果不存在 "spring.beaninfo.ignore" 则设置该属性，默认为true
+
+<br/>
+
+2-4. createApplicationContext() 会根据 WebApplicationType 来创建 ConfigurableApplicationContext 的实例。 如 WebApplicationType 为 SERVLET 将创建 `org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext` 的实例。  
+此时需要注意在 AnnotationConfigServletWebServerApplicationContext 被创建时 属性中 environment 将被创建一个新的 Environment 实例，该实例这时并非为 2-2 中所创建的 Environment。AnnotationConfigServletWebServerApplicationContext 中 初始化了两个关键类 [AnnotatedBeanDefinitionReader, ClassPathBeanDefinitionScanner]
+
+<br/>
+
+2-5. 这里比较简单，主要是扫描classpath:META-INF/spring.factories 文件中定义的 SpringBootExceptionReporter 实现类并初始化，这些类用于处理启动过程中的错误
+
+<br/>
+
+2-6. 这一步主要包含如下几个重要步骤  
+
+2-6-1. 将在 2-4 中所创建的 AnnotationConfigServletWebServerApplicationContext 的 environment属性替换为 2-2-1 中所创建的 Environment 实例  
+
+2-6-2. 这里主要是将前面 2-2-2 中创建的 ConversionService 设置到 context.beanFactory.conversionService 中
+
+2-6-3. 前面1-2中通过扫描classpath:META-INF/spring.factoriesApplicationContextInitializer将在这一步被调用  
+
+2-6-4. 触发 ApplicationContextInitializedEvent 事件
 
 <br/>
 <br/>

@@ -1,5 +1,5 @@
 ---
-title: "About"
+title: "关于"
 ---
 
-Z6N Blog. 
+Z6N Blog.
