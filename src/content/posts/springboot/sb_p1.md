@@ -180,13 +180,13 @@ org.springframework.context.event.internalEventListenerFactory: org.springframew
 
 2-6-2. 这里主要是将前面 2-2-2 中创建的 ConversionService 设置到 context.beanFactory.conversionService 中
 
-2-6-3. 前面1-2中通过扫描classpath:META-INF/spring.factoriesApplicationContextInitializer将在这一步被调用  
+2-6-3. 前面1-2中通过扫描classpath:META-INF/spring.factories ApplicationContextInitializer将在这一步被调用  
 
 2-6-4. 触发 ApplicationContextInitializedEvent 事件(此时因还未refresh context加载bean 所以该事件还是只有 spring.factories 文件中扫描加载的的ApplicationListener能监听到)  
 
 2-6-5. 将启动命令的args封装成的 ApplicationArguments 注入到context 的 beanFactory 中,并设置 beanFactory 的一些属性配置  
 
-2-6-6. 通过启动入口sources(1处传入的class)作为参数创建了 BeanDefinitionLoader 。 BeanDefinitionLoader在创建过程中同样会创建 [AnnotatedBeanDefinitionReader, ClassPathBeanDefinitionScanner] 这与 2-4 中的实例并不相同，但 2-4 已经在`AnnotationConfigUtils.registerAnnotationConfigProcessors(this.registry)` 注入了一些关键类，这里不会重复注入
+2-6-6. 通过启动入口sources(1处传入的class)作为参数创建了 BeanDefinitionLoader 。 BeanDefinitionLoader在创建过程中同样会创建 [AnnotatedBeanDefinitionReader, ClassPathBeanDefinitionScanner] 这与 2-4 中的实例并不相同，但 2-4 已经在`AnnotationConfigUtils.registerAnnotationConfigProcessors(this.registry)` 注入了一些关键类，这里不会重复注入  
 创建ClassPathBeanDefinitionScanner添加了排除过滤器 ClassExcludeFilter(sources)  
 然后通过调用BeanDefinitionLoader.load() 方法 将入口Class加入到context beanFactory托管
 
