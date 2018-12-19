@@ -5,7 +5,7 @@
 <meta http-equiv="x-ua-compatible" content="ie=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-<meta property="og:title" content="Spring Boot 源码分析(1)" />
+<meta property="og:title" content="Spring Boot 源码分析-启动流程(1)" />
 <meta property="og:description" content="源码版本  spring boot 2.1.0.RELEASE
   
 入口代码 @SpringBootApplication public class Run { public static void main(String[] args) { SpringApplication app = new SpringApplication(Run.class); // 1 app.run(args); // 2 } }  构造方法中的加载过程 在new SpringApplication(Run.class)中实际调用的是SpringApplication(ResourceLoader resourceLoader, Class&lt;?&gt;... primarySources)构造方法，在构造方法中主要执行了一些必要的查找初始化工作。   
@@ -15,7 +15,7 @@ public SpringApplication(ResourceLoader resourceLoader, Class&lt;?&gt;... primar
 <meta property="article:modified_time" content="2018-12-17T20:19:48&#43;08:00"/>
 
 <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Spring Boot 源码分析(1)"/>
+<meta name="twitter:title" content="Spring Boot 源码分析-启动流程(1)"/>
 <meta name="twitter:description" content="源码版本  spring boot 2.1.0.RELEASE
   
 入口代码 @SpringBootApplication public class Run { public static void main(String[] args) { SpringApplication app = new SpringApplication(Run.class); // 1 app.run(args); // 2 } }  构造方法中的加载过程 在new SpringApplication(Run.class)中实际调用的是SpringApplication(ResourceLoader resourceLoader, Class&lt;?&gt;... primarySources)构造方法，在构造方法中主要执行了一些必要的查找初始化工作。   
@@ -27,7 +27,7 @@ public SpringApplication(ResourceLoader resourceLoader, Class&lt;?&gt;... primar
 
     <title>
       
-        Spring Boot 源码分析(1) | Z6N
+        Spring Boot 源码分析-启动流程(1) | Z6N
       
     </title>
 
@@ -105,7 +105,7 @@ public SpringApplication(ResourceLoader resourceLoader, Class&lt;?&gt;... primar
 
 <header>
     <h2 class="blog-post-title">
-        <a class="text-dark" href="/2018/12/sb_p1/">Spring Boot 源码分析(1)</a>
+        <a class="text-dark" href="/2018/12/sb_p1/">Spring Boot 源码分析-启动流程(1)</a>
     </h2>
     
 
@@ -255,7 +255,10 @@ public class Run {
 
 <p><br/></p>
 
-<p>2-1. 扫描classpath:META-INF/spring.factories 文件中定义的 SpringApplicationRunListener 实现类,并创建实例,然后将实例组合到 SpringApplicationRunListeners 实例中，普通web应用默认情况下其实只是加载了一个 EventPublishingRunListener 实例，该实例在启动过程中会用来发送各类事件给监听器 (listeners.starting() 触发了一个 ApplicationStartingEvent 事件,这时就已经可以触发前面初始化加载的ApplicationListener监听器了)</p>
+<p>2-1. 扫描classpath:META-INF/spring.factories 文件中定义的 SpringApplicationRunListener 实现类,并创建实例,然后将实例组合到 SpringApplicationRunListeners 实例中，普通web应用默认情况下其实只是加载了一个 EventPublishingRunListener 实例，该实例在启动过程中会使用(SimpleApplicationEventMulticaster)来发送各类事件给监听器<br />
+  listeners.starting() 触发了一个 ApplicationStartingEvent 事件,这时就已经可以触发前面初始化加载的ApplicationListener监听器了</p>
+
+<p><br/></p>
 
 <p>2-2. 主要做了如下几件事(只做简单描述，后面再做详细解刨)</p>
 
@@ -277,6 +280,72 @@ public class Run {
 
 <p>2-2-6. SpringConfigurationPropertySources PropertySourcesPlaceholdersResolver 及2-2-3处的PropertySources绑定到一起用于后的属性获取包括将表达式解析成最终值 如 <code>server.port=${random.int[8080,8090]}</code></p>
 
+<p><br/></p>
+
+<p>2-3. configureIgnoreBeanInfo(environment) 在System.setProperty 中如果不存在 &ldquo;spring.beaninfo.ignore&rdquo; 则设置该属性，默认为true</p>
+
+<p><br/></p>
+
+<p>2-4. createApplicationContext() 会根据 WebApplicationType 来创建 ConfigurableApplicationContext 的实例。 如 WebApplicationType 为 SERVLET 将创建 <code>org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext</code> 的实例。<br />
+此时需要注意在 AnnotationConfigServletWebServerApplicationContext 被创建时 属性中 environment 将被创建一个新的 Environment 实例，该实例这时并非为 2-2 中所创建的 Environment。AnnotationConfigServletWebServerApplicationContext 中 初始化了两个关键类 [AnnotatedBeanDefinitionReader, ClassPathBeanDefinitionScanner]<br />
+在创建 AnnotatedBeanDefinitionReader 时通过<code>AnnotationConfigUtils.registerAnnotationConfigProcessors(this.registry)</code> 将如下类交由beanFactory托管</p>
+
+<pre><code>org.springframework.context.annotation.internalConfigurationAnnotationProcessor: org.springframework.context.annotation.ConfigurationClassPostProcessor  
+org.springframework.context.annotation.internalAutowiredAnnotationProcessor: org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
+org.springframework.context.annotation.internalCommonAnnotationProcessor: org.springframework.context.annotation.CommonAnnotationBeanPostProcessor
+org.springframework.context.annotation.internalPersistenceAnnotationProcessor: org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor
+org.springframework.context.event.internalEventListenerProcessor: org.springframework.context.event.EventListenerMethodProcessor
+org.springframework.context.event.internalEventListenerFactory: org.springframework.context.event.DefaultEventListenerFactory
+</code></pre>
+
+<p>创建 ClassPathBeanDefinitionScanner 时初始化了 AnnotationTypeFilter （用户匹配元注解）</p>
+
+<p><br/></p>
+
+<p>2-5. 这里比较简单，主要是扫描classpath:META-INF/spring.factories 文件中定义的 SpringBootExceptionReporter 实现类并初始化，这些类用于处理启动过程中的错误</p>
+
+<p><br/></p>
+
+<p>2-6. 这一步主要包含如下几个重要步骤</p>
+
+<p>2-6-1. 将在 2-4 中所创建的 AnnotationConfigServletWebServerApplicationContext 的 environment属性替换为 2-2-1 中所创建的 Environment 实例</p>
+
+<p>2-6-2. 这里主要是将前面 2-2-2 中创建的 ConversionService 设置到 context.beanFactory.conversionService 中</p>
+
+<p>2-6-3. 前面1-2中通过扫描classpath:META-INF/spring.factories ApplicationContextInitializer将在这一步被调用</p>
+
+<p>2-6-4. 触发 ApplicationContextInitializedEvent 事件(此时因还未refresh context加载bean 所以该事件还是只有 spring.factories 文件中扫描加载的的ApplicationListener能监听到)</p>
+
+<p>2-6-5. 将启动命令的args封装成的 ApplicationArguments 注入到context 的 beanFactory 中,并设置 beanFactory 的一些属性配置</p>
+
+<p>2-6-6. 通过启动入口sources(1处传入的class)作为参数创建了 BeanDefinitionLoader 。 BeanDefinitionLoader在创建过程中同样会创建 [AnnotatedBeanDefinitionReader, ClassPathBeanDefinitionScanner] 这与 2-4 中的实例并不相同，但 2-4 已经在<code>AnnotationConfigUtils.registerAnnotationConfigProcessors(this.registry)</code> 注入了一些关键类，这里不会重复注入<br />
+创建ClassPathBeanDefinitionScanner添加了排除过滤器 ClassExcludeFilter(sources)<br />
+然后通过调用BeanDefinitionLoader.load() 方法 将入口Class加入到context beanFactory托管</p>
+
+<p>2-6-7. 触发 ApplicationPreparedEvent 事件。此处触发事件前做了一些额外的工作。<br />
+将循环判断从 spring.factories 文件中扫描加载的的 ApplicationListener 或者 在创建 SpringApplication 手动设置的 ApplicationListener （存储在SpringApplication.listeners中），如果listener实现了 ApplicationContextAware 接口，将会把context设置到listener实例属性中。<br />
+将listener加入到 context 的 applicationListeners 属性中。</p>
+
+<p><br/></p>
+
+<p>2-7. refreshContext(context)应该是处理最复杂的一步了，各种托管bean的初始化,扫描,加载,装配都在这一步完成，后面用专门文章针对这一方法做仔细说明.</p>
+
+<p><br/></p>
+
+<p>2-8. afterRefresh 为一个空方法，并未做任何实现</p>
+
+<p><br/></p>
+
+<p>2-9. 触发 ApplicationStartedEvent 事件,这里也有些不同，前面都是通过EventPublishingRunListener.SimpleApplicationEventMulticaster 来触发，这里会使用context中的SimpleApplicationEventMulticaster来触发，这时因各种bean已经在2-7已经初始化完成，所以实现了相应监听接口的类都能得到触发。</p>
+
+<p><br/></p>
+
+<p>2-10. 启动完成后从context中调用 ApplicationRunner, CommandLineRunner 调用执行</p>
+
+<p><br/></p>
+
+<p>2-11. 通过调用 context 触发 ApplicationReadyEvent 事件</p>
+
 <p><br/>
 <br/></p>
 
@@ -284,7 +353,7 @@ public class Run {
 
 <hr />
 
-<p>到这里只是简单的介绍了下spring boot的预启动过程，说明了再启动前做了哪些事，我们能从这些事情中能做到哪些切入点。 从上面我们可以看到我们能做的最早的切入点便是 ApplicationListener， ApplicationListener触发执行时，应用bean此时还并未进入初始化状态。所以我们可以用 ApplicationListener 来做很多的准备工作，比如改写配置，实现自己的配置属性加载类等。</p>
+<p>到这里只是简单的介绍了下spring boot的启动过程，说明了再启动前做了哪些事，我们能从这些事情中能做到哪些切入点,可以从哪一步来定义自己的功能，或者出现问题能判断出大致出现在哪一步。 从上面我们可以看到我们能做的最早的切入点便是 ApplicationListener， ApplicationListener触发执行时，应用bean此时还并未进入初始化状态。所以我们可以用 ApplicationListener 来做很多的准备工作，比如改写配置，实现自己的配置属性加载类等。而且我们可以看出在2-7之前所触发的事件只有在spring.factories中定义的或者在程序创建时加入的listener能够监听到(如 ApplicationStartingEvent, ApplicationPreparedEvent)，只有在2-7完成后触发的事件采用spring常用注解托管的监听器才能监听到&hellip;</p>
 
 <p><br/>
 <br/></p>
